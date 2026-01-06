@@ -1,19 +1,39 @@
 package tictactoe;
 import java.io.*;
 import javax.swing.*;
+import java.util.Arrays;
+import java.util.Random;
 
 public class tictactoe {
 	
-	public static void buttonClick(JButton b, String s) {
-		System.out.println("Button " + s + " pushed!");
-		b.setText("pushed");
+	private int[][] grid;		// 0 = EMPTY; 1 = X; 2 = O;
+	private boolean turn_order;	// true = X turn; false = 0 turn;
+	
+	// constructor
+	public tictactoe() {
+		grid = new int[3][3];
+		turn_order = flipCoin();
 		
 		return;
 	}
-
-	public static void main(String[] args) {
-		
+	
+	
+	@Override
+	public String toString() {
+	    return 	Arrays.toString(grid[0]) + "\n" + 
+	    		Arrays.toString(grid[1]) + "\n" + 
+				Arrays.toString(grid[2]) + 
+				"\nturn: " + turn_order + "\n";
+	}
+	
+	
+	public void gameUI() {
 		JFrame window = new JFrame("Tic Tac Toe");
+		
+		// create label to denote whose turn it is
+		JLabel l1 = new JLabel("test");
+		l1.setBounds(  0, 300, 300, 25);
+		window.add(l1);
 		
 		// create 9 buttons (grid in tictactoe)
 		JButton b11 = new JButton("b11");	// first row
@@ -49,23 +69,111 @@ public class tictactoe {
 		window.add(b33);
 		
 		// action handling pushing the buttons
-		b11.addActionListener(e -> buttonClick(b11, "b11"));
-		b12.addActionListener(e -> buttonClick(b12, "b12"));
-		b13.addActionListener(e -> buttonClick(b13, "b13"));
-		b21.addActionListener(e -> buttonClick(b21, "b21"));
-		b22.addActionListener(e -> buttonClick(b22, "b22"));
-		b23.addActionListener(e -> buttonClick(b23, "b23"));
-		b31.addActionListener(e -> buttonClick(b31, "b31"));
-		b32.addActionListener(e -> buttonClick(b32, "b32"));
-		b33.addActionListener(e -> buttonClick(b33, "b33"));
+		b11.addActionListener(e -> buttonClick(b11, l1, 0, 0));
+		b12.addActionListener(e -> buttonClick(b12, l1, 0, 1));
+		b13.addActionListener(e -> buttonClick(b13, l1, 0, 2));
+		b21.addActionListener(e -> buttonClick(b21, l1, 1, 0));
+		b22.addActionListener(e -> buttonClick(b22, l1, 1, 1));
+		b23.addActionListener(e -> buttonClick(b23, l1, 1, 2));
+		b31.addActionListener(e -> buttonClick(b31, l1, 2, 0));
+		b32.addActionListener(e -> buttonClick(b32, l1, 2, 1));
+		b33.addActionListener(e -> buttonClick(b33, l1, 2, 2));
 		
 		
-		window.setSize(317, 340);
+		window.setSize(317, 375);
 		window.setLayout(null);
 		window.setVisible(true);
 		
+		return;
+    }
+	
+	
+	// flips a coin for T/F. Used to choose which side will go first.
+	public boolean flipCoin() {
+		Random r = new Random();
+		int flip = r.nextInt(2);
+		if (flip == 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	// return whose side it is
+	public boolean getSide() {
+		return turn_order;
+	}
+	
+	
+	// manually choose which turn is going. true = X turn; false = 0 turn;
+	public void overrideSide(boolean s) {
+		turn_order = s;
 		
+		return;
+	}
+	
+	
+	// place either X or O onto the grid. X or O is chosen based on the current turn order.
+	public int placeToken(int row, int col) {
+		if (grid[row][col] == 0) {	// valid move
+			int placed_val;
+			if (turn_order == true) {	// true = X turn
+				placed_val = 1;
+			} else {					// false = 0 turn
+				placed_val = 2;
+			}
+			grid[row][col] = placed_val;
+			turn_order = !turn_order;
+			
+			return placed_val;	// 1 or 2
+			 
+		} else {	// invalid move
+			return 0;
+		}
+	}
+	
+	
+	// update text box to indicate whose turn it is ( true = X turn; false = 0 turn; )
+	public void updateTurnLabel(JLabel l) {
+		if (turn_order == true) {
+			l.setText("It is X's turn.");
+		} else {
+			l.setText("It is O's turn.");
+		}
+		
+		return;
+	}
+	
+	
+	// logic for when a button is clicked
+	public void buttonClick(JButton b, JLabel l, int row, int col) {
+		
+		System.out.println("Button " + row + col + " pushed!");
+		int tok = placeToken(row, col);
+		
+		if (tok == 1) {
+			b.setText("X");
+		} else {
+			b.setText("O");
+		}
+		updateTurnLabel(l);
+		
+		System.out.println(this);
+		
+		return;
+	}
 
+	public static void main(String[] args) {
+		
+		tictactoe ttt = new tictactoe();
+		
+		ttt.gameUI();
+		
+		System.out.println(ttt);
+		// System.out.println(ttt.placeToken(0, 0));
+		System.out.println(ttt);
+	
 	}
 
 }
