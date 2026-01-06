@@ -9,6 +9,7 @@ public class tictactoe {
 	private int[][] grid;		// 0 = EMPTY; 1 = X; 2 = O;
 	private boolean turn_order;	// true = X turn; false = 0 turn;
 	
+	
 	// constructor
 	public tictactoe() {
 		grid = new int[3][3];
@@ -25,26 +26,196 @@ public class tictactoe {
 				Arrays.toString(grid[2]) + 
 				"\nturn: " + turn_order + "\n";
 	}
+		
+	
+	// -----------------------------------------------
+	// ------------ Turn Taking Functions ------------
+	// -----------------------------------------------
+	
+	// flips a coin for T/F. Used to choose which side will go first.
+	public boolean flipCoin() {
+		Random r = new Random();
+		int flip = r.nextInt(2);
+		if (flip == 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 	
 	
+	// return whose side it is
+	public boolean getSide() {
+		return turn_order;
+	}
+	
+	
+	// manually choose which turn is going. true = X turn; false = 0 turn;
+	public void overrideSide(boolean s) {
+		turn_order = s;
+		
+		return;
+	}
+	
+	
+	// ----------------------------------------
+	// ------------ Grid Functions ------------
+	// ----------------------------------------
+	
+	// check if a win is secured by row
+	public boolean checkRowWin(int r) {
+		boolean not_empty = grid[r][0] > 0;
+		boolean zero_one = grid[r][0] == grid[r][1];
+		boolean zero_two = grid[r][0] == grid[r][2];
+		
+		if ( not_empty && zero_one && zero_two ) {
+			return true;
+		} else {
+			return false;
+		}		
+	}
+	
+	
+	// check if a win is secured by column
+	public boolean checkColWin(int c) {
+		boolean not_empty = grid[0][c] > 0;
+		boolean zero_one = grid[0][c] == grid[1][c];
+		boolean zero_two = grid[0][c] == grid[2][c];
+		
+		if ( not_empty && zero_one && zero_two ) {
+			return true;
+		} else {
+			return false;
+		}		
+	}
+	
+	
+	// check if a win is secured by diagonal ( / <- forward slash diagonal )
+	public boolean checkDiagWinForward() {
+		boolean not_empty = grid[2][0] > 0;
+		boolean zero_one = grid[2][0] == grid[1][1];
+		boolean zero_two = grid[2][0] == grid[0][2];
+		
+		if ( not_empty && zero_one && zero_two ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	// check if a win is secured by diagonal ( \ <- backward slash diagonal )
+	public boolean checkDiagWinBack() {
+		boolean not_empty = grid[0][0] > 0;
+		boolean zero_one = grid[0][0] == grid[1][1];
+		boolean zero_two = grid[0][0] == grid[2][2];
+		
+		if ( not_empty && zero_one && zero_two ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	// place either X or O onto the grid. X or O is chosen based on the current turn order.
+	public int placeToken(int row, int col) {
+		if (grid[row][col] == 0) {	// valid move
+			int placed_val;
+			if (turn_order == true) {	// true = X turn
+				placed_val = 1;
+			} else {					// false = 0 turn
+				placed_val = 2;
+			}
+			grid[row][col] = placed_val;
+			turn_order = !turn_order;
+			
+			return placed_val;	// 1 or 2
+			 
+		} else {	// invalid move
+			return 0;
+		}
+	}
+	
+	
+	// --------------------------------------------
+	// ------------ SWING UI Functions ------------
+	// --------------------------------------------
+	
+	// update text box to indicate whose turn it is ( true = X turn; false = 0 turn; )
+	public void updateTurnLabel(JLabel l) {
+		if (turn_order == true) {
+			l.setText("It is X's turn.");
+		} else {
+			l.setText("It is O's turn.");
+		}
+		
+		return;
+	}
+	
+	
+	// logic for when a button is clicked
+	public void buttonClick(JButton b, JLabel l, int row, int col) {
+		// System.out.println("Button " + row + col + " pushed!"); // debug print
+		int tok = placeToken(row, col);
+		
+		if (tok == 1) {		// update button label
+			b.setText("X");
+		} else if (tok == 2) {
+			b.setText("O");
+		}
+		
+		// check if someone has won the game
+		boolean r0 = checkRowWin(0);
+		boolean r1 = checkRowWin(1);
+		boolean r2 = checkRowWin(2);
+		boolean c0 = checkColWin(0);
+		boolean c1 = checkColWin(1);
+		boolean c2 = checkColWin(2);
+		boolean d1 = checkDiagWinForward();
+		boolean d2 = checkDiagWinBack();
+		
+		/*
+		System.out.println(r0 + "" + r1 + "" + r2 + "\n" + 	// debug print
+						   c0 + "" + c1 + "" + c2 + "\n" + 
+						   d1 + "" + d2 );
+		*/
+		if (r0 || r1 || r2 || c0 || c1 || c2 || d1 || d2) {	// a player has won the game
+			
+			if (turn_order == true) {
+				win("O");	// reverse of previous logic bc we updated turn order already
+			} else {
+				win("X");
+			}
+			
+		}
+		
+		updateTurnLabel(l);	// update turn indicator label
+		// System.out.println(this); // debug print
+		
+		return;
+	}
+	
+	// creates game window
 	public void gameUI() {
 		JFrame window = new JFrame("Tic Tac Toe");
 		
 		// create label to denote whose turn it is
-		JLabel l1 = new JLabel("test");
-		l1.setBounds(  0, 300, 300, 25);
+		JLabel l1 = new JLabel("");
+		l1.setBounds( 10, 300, 300, 25);
 		window.add(l1);
+		updateTurnLabel(l1);	// update turn indicator label
 		
 		// create 9 buttons (grid in tictactoe)
-		JButton b11 = new JButton("b11");	// first row
-		JButton b12 = new JButton("b12");
-		JButton b13 = new JButton("b13");
-		JButton b21 = new JButton("b21");	// second row
-		JButton b22 = new JButton("b22");
-		JButton b23 = new JButton("b23");
-		JButton b31 = new JButton("b31");	// third row
-		JButton b32 = new JButton("b32");
-		JButton b33 = new JButton("b33");
+		JButton b11 = new JButton("");	// first row
+		JButton b12 = new JButton("");
+		JButton b13 = new JButton("");
+		JButton b21 = new JButton("");	// second row
+		JButton b22 = new JButton("");
+		JButton b23 = new JButton("");
+		JButton b31 = new JButton("");	// third row
+		JButton b32 = new JButton("");
+		JButton b33 = new JButton("");
 		
 		// define button size and where they go on the window
 		b11.setBounds(  0,   0, 100, 100);	// first row
@@ -79,7 +250,6 @@ public class tictactoe {
 		b32.addActionListener(e -> buttonClick(b32, l1, 2, 1));
 		b33.addActionListener(e -> buttonClick(b33, l1, 2, 2));
 		
-		
 		window.setSize(317, 375);
 		window.setLayout(null);
 		window.setVisible(true);
@@ -88,92 +258,27 @@ public class tictactoe {
     }
 	
 	
-	// flips a coin for T/F. Used to choose which side will go first.
-	public boolean flipCoin() {
-		Random r = new Random();
-		int flip = r.nextInt(2);
-		if (flip == 1) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	
-	// return whose side it is
-	public boolean getSide() {
-		return turn_order;
-	}
-	
-	
-	// manually choose which turn is going. true = X turn; false = 0 turn;
-	public void overrideSide(boolean s) {
-		turn_order = s;
+	// pop up window to show that the game has concluded.
+	private void win(String w) {
+		JFrame you_win = new JFrame("You Win!");
+		you_win.setSize(300, 200);
+		you_win.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
+		JLabel winner = new JLabel(w + " wins!", SwingConstants.CENTER);
+		you_win.add(winner);
+		
+		you_win.setVisible(true);
 		
 		return;
 	}
 	
+	// ------------------
+	// ------ MAIN ------
+	// ------------------
 	
-	// place either X or O onto the grid. X or O is chosen based on the current turn order.
-	public int placeToken(int row, int col) {
-		if (grid[row][col] == 0) {	// valid move
-			int placed_val;
-			if (turn_order == true) {	// true = X turn
-				placed_val = 1;
-			} else {					// false = 0 turn
-				placed_val = 2;
-			}
-			grid[row][col] = placed_val;
-			turn_order = !turn_order;
-			
-			return placed_val;	// 1 or 2
-			 
-		} else {	// invalid move
-			return 0;
-		}
-	}
-	
-	
-	// update text box to indicate whose turn it is ( true = X turn; false = 0 turn; )
-	public void updateTurnLabel(JLabel l) {
-		if (turn_order == true) {
-			l.setText("It is X's turn.");
-		} else {
-			l.setText("It is O's turn.");
-		}
-		
-		return;
-	}
-	
-	
-	// logic for when a button is clicked
-	public void buttonClick(JButton b, JLabel l, int row, int col) {
-		
-		System.out.println("Button " + row + col + " pushed!");
-		int tok = placeToken(row, col);
-		
-		if (tok == 1) {
-			b.setText("X");
-		} else {
-			b.setText("O");
-		}
-		updateTurnLabel(l);
-		
-		System.out.println(this);
-		
-		return;
-	}
-
 	public static void main(String[] args) {
-		
 		tictactoe ttt = new tictactoe();
-		
 		ttt.gameUI();
-		
-		System.out.println(ttt);
-		// System.out.println(ttt.placeToken(0, 0));
-		System.out.println(ttt);
-	
 	}
 
 }
